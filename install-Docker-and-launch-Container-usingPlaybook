@@ -1,0 +1,32 @@
+---
+- name: Configure and Run HTTPD in Docker Container
+  hosts: your_managed_nodes
+  become: yes  # Use sudo to execute commands
+  tasks:
+    - name: Install Docker
+      yum:
+        name: docker
+        state: present
+      ignore_errors: yes  # Ignore errors if Docker is already installed
+
+    - name: Start and Enable Docker service
+      systemd:
+        name: docker
+        enabled: yes
+        state: started
+
+    - name: Pull httpd image from Docker Hub
+      command: docker pull httpd:latest
+
+    - name: Create a directory for HTML content
+      file:
+        path: /var/www/html
+        state: directory
+
+    - name: Copy HTML code to /var/www/html
+      copy:
+        src: your_html_code_directory/index.html
+        dest: /var/www/html/index.html
+
+    - name: Run the Docker container and expose it
+      command: docker run -d -p 80:80 --name my_httpd_container -v /var/www/html:/usr/local/apache2/htdocs/ httpd:latest
